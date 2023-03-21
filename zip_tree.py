@@ -19,8 +19,7 @@ class Node:
 		self.left = None
 		self.right = None
 
-class ZipTree:	
-	numNodes = 0
+class ZipTree:		
 	def __init__(self):
 		self.root = None
 
@@ -47,21 +46,21 @@ class ZipTree:
 				return p, node
 		return unzip_lookup(x.key, y)
 
-	def getInsertNode(self, node: Node, cur: Node, par: Node)-> Node:
-		if cur is None:
-			return cur, par
-		if cur.rank < node.rank:
-			return cur, par
-		if cur.rank == node.rank:
-			if cur.key > node.key:
-				return cur, par
-			else:
-				return self.getInsertNode(node, cur.right, cur)
-		if cur.key > node.key:
-			return self.getInsertNode(node, cur.left, cur)
-		else:
-			return self.getInsertNode(node, cur.right, cur)
-		
+	def getInsertNode(self, node: Node)-> Node:
+		cur = self.root
+		par = None
+		while cur is not None:
+			if cur.rank < node.rank:
+				return par,cur
+			elif cur.rank == node.rank and cur.key > node.key:
+					return par, cur
+			else:	
+				par = cur			
+				if cur.key > node.key:
+					cur = cur.left
+				else:
+					cur = cur.right
+		return par,None
 		
 	def insert(self, key: KeyType, val: ValType, rank: int = -1):
 		if rank == -1:
@@ -69,17 +68,30 @@ class ZipTree:
 		node = Node(key, val, rank)
 		
 		if self.root is None:
-			self.root = node
+			self.root = node			
 		else:
-			y, par = self.getInsertNode(node, self.root, self.root)
-			p, q = self.unzip(node, y)
+			par, ins = self.getInsertNode(node)
+			if ins is None:
+				if par.key > key:
+					par.left = node
+				else:
+					par.right = node
+				return
+			if par is None:
+				p, q = self.unzip(node, ins)
+				node.left = p
+				node.right = q
+				self.root = node
+				return
+			if par is not None:
+				if par.key < node.key:
+					par.right = node
+				else:
+					par.left = node
+			p, q = self.unzip(node, ins)
 			node.left = p
 			node.right = q
-			if par.key < node.key:
-				par.right = node
-			else:
-				par.left = node
-		self.numNodes += 1
+					
 		
 	def zip(self, x: Node):
 		def zipup(p: Node, q: Node):
@@ -94,60 +106,69 @@ class ZipTree:
 		return zipup(x.left, x.right)
 	
 	def remove(self, key: KeyType):
-		self.numNodes -= 1
+		cur = self.root
+		par = None
+		while cur is not None:
+			if cur.key == key:
+				break
+			elif cur.key < key:
+				par = cur
+				cur = cur.right
+			else:
+				par = cur
+				cur = cur.left
+		node = self.zip(cur)
+		if par is None:
+			self.root = node
+			return
+		if par.key > cur.key:
+			par.left = node
+		else:
+			par.right = node		
 
 	def find(self, key: KeyType) -> ValType:
-		node = self.root		
-		while node.key != key:
-			if node.key > key:
-				node = node.left
-			else:
-				node = node.right			
-		return node.value
+		def find(root, key):
+			if root is None:
+				return 
+			elif root.key == key:
+				return root.value
+			if root.key < key:
+				return find(root.right, key)
+			return find(root.left, key)
+		return find(self.root, key)
+
 
 	def get_size(self) -> int:
-		return self.numNodes
+		def size(node: Node) -> int:
+			if node is None:
+				return 0
+			l = size(node.left)
+			r = size(node.right)
+			return l + r + 1
+		return size(self.root)
 
-	def get_height(self) -> int:	
-		#self.inorder(self.root)	
-		node = self.root
-		if node is None or (node.left is None and node.right is None):
-			return 0
-		q = deque()		
-		q.append(node)
+	def get_height(self) -> int:					
+		q = [self.root]				
 		ht = 0
-		while q:			
-			sz = len(q)
-			#print("height" + str(sz) + " " + str(ht))
+		while q:									
 			ht += 1
-			for i in range(sz):
-				node = q.popleft()								
-				if node.left is not None:
-					# print(node.left)
+			for _ in range(len(q)):
+				node = q.pop(0)								
+				if node.left != None:					
 					q.append(node.left)
-				if node.right is not None:
-					# print(node.right)
+				if node.right != None:					
 					q.append(node.right)
 		return ht - 1
 
-	def inorder(self, node:Node):
-		if node is None:
-			return
-		self.inorder(node.left)
-		print(node.value)
-		self.inorder(node.right)
-
-
 	def get_depth(self, key: KeyType):
-		node = self.root
-		depth = 0
-		while node.key != key:
-			if node.key > key:
-				node = node.left
+		def depth(node:Node, key:KeyType)-> int:
+			if node == None or node.key == key:
+				return 0			
+			elif node.key < key:
+				return depth(node.right, key) + 1
 			else:
-				node = node.right
-			depth += 1
-		return depth
+				return depth(node.left, key) + 1
+		return depth(self.root, key)
 
 # feel free to define new classes/methods in addition to the above
 # fill in the definitions of each required member function (above),
