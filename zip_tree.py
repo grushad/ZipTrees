@@ -130,26 +130,17 @@ class ZipTree:
 			par.right = node		
 
 	def find(self, key: KeyType) -> ValType:
-		def find(root, key):
-			if root is None:
-				return 
-			elif root.key == key:
-				return root.value
-			if root.key < key:
-				return find(root.right, key)
-			return find(root.left, key)
-		return find(self.root, key)
+		node = self.root		
+		while node.key != key:
+			if node.key > key:
+				node = node.left
+			else:
+				node = node.right			
+		return node.value
 
 
 	def get_size(self) -> int:
 		return self.numNodes
-		def size(node: Node) -> int:
-			if node is None:
-				return 0
-			l = size(node.left)
-			r = size(node.right)
-			return l + r + 1
-		return size(self.root)
 
 	def get_height(self) -> int:					
 		q = [self.root]				
@@ -165,14 +156,15 @@ class ZipTree:
 		return ht - 1
 
 	def get_depth(self, key: KeyType):
-		def depth(node:Node, key:KeyType)-> int:
-			if node == None or node.key == key:
-				return 0			
-			elif node.key < key:
-				return depth(node.right, key) + 1
+		node = self.root
+		depth = 0
+		while node.key != key:
+			if node.key > key:
+				node = node.left
 			else:
-				return depth(node.left, key) + 1
-		return depth(self.root, key)
+				node = node.right
+			depth += 1
+		return depth
 
 # feel free to define new classes/methods in addition to the above
 # fill in the definitions of each required member function (above),
