@@ -19,9 +19,10 @@ class Node:
 		self.left = None
 		self.right = None
 
-class ZipTree:		
+class ZipTree:			
 	def __init__(self):
 		self.root = None
+		self.numNodes = 0
 
 	@staticmethod
 	def get_random_rank() -> int:
@@ -63,6 +64,7 @@ class ZipTree:
 		return par,None
 		
 	def insert(self, key: KeyType, val: ValType, rank: int = -1):
+		self.numNodes += 1
 		if rank == -1:
 			rank = ZipTree.get_random_rank()
 		node = Node(key, val, rank)
@@ -106,6 +108,7 @@ class ZipTree:
 		return zipup(x.left, x.right)
 	
 	def remove(self, key: KeyType):
+		self.numNodes -= 1
 		cur = self.root
 		par = None
 		while cur is not None:
@@ -139,6 +142,7 @@ class ZipTree:
 
 
 	def get_size(self) -> int:
+		return self.numNodes
 		def size(node: Node) -> int:
 			if node is None:
 				return 0
